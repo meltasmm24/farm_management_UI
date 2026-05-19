@@ -25,3 +25,22 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+src/app/
+  core/
+    navigation/
+    header/
+    sidebar/
+  features/
+    dashboard/     ← overview cards, charts, map, alerts
+    fields/        ← map grid, field detail page, crop status
+    workers/       ← task assignments, scheduling Gantt or table
+    inventory/     ← equipment, seed, and supply overview
+    weather/       ← weather service & widget component
+    tasks/         ← maintenance and scheduling
+  shared/
+    models/
+    services/
+      farm.service.ts      ← CRUD for fields, workers, inventory
+      weather.service.ts   ← weather API integration
