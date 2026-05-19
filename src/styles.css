@@ -1,1 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
+/* Primary color - #28b75ef0;
+Secondary color - #a5aaa7f0;
+third color - #ffffff;
+fourth color - #000000;
+
+font family - */
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #1e293b;
+}

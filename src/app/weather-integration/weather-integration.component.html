@@ -1,0 +1,73 @@
+<div class="weather-integration-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Weather Forecast</h1>
+      <p class="page-subtitle">Real-time localized agriculture meteorology and weekly forecasting.</p>
+    </div>
+  </div>
+
+  <!-- Hero Current Weather Panel -->
+  <div class="hero-panel" [ngClass]="currentWeather.condition.toLowerCase().replace(' ', '-')">
+    <div class="hero-content">
+      <div class="hero-left">
+        <h2 class="area-title">Farm Headquarters</h2>
+        <div class="current-date">{{ currentWeather.dayName }}, {{ currentWeather.date }}</div>
+        
+        <div class="main-temperature">
+          <span class="weather-icon-lg">{{ getWeatherIcon(currentWeather.condition) }}</span>
+          <div class="temp-huge">{{ currentWeather.tempHigh }}°<span class="unit">C</span></div>
+        </div>
+        <div class="condition-text">{{ currentWeather.condition }}</div>
+      </div>
+      
+      <div class="hero-right">
+        <div class="weather-detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Wind</span>
+            <span class="detail-value">{{ currentWeather.windSpeed }} km/h</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Humidity</span>
+            <span class="detail-value">{{ currentWeather.humidity }}%</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Low Temp</span>
+            <span class="detail-value">{{ currentWeather.tempLow }}°C</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 Day Forecast Title -->
+  <div class="section-title-wrap">
+    <h2>7-Day Outlook</h2>
+  </div>
+
+  <!-- Forecast Grid -->
+  <div class="forecast-grid">
+    <div *ngFor="let day of forecast.slice(1); let i = index" class="forecast-card glass-panel" [ngClass]="day.condition.toLowerCase().replace(' ', '-') + '-sub'">
+      
+      <div class="day-header">
+        <span class="day-name">{{ day.dayName }}</span>
+        <span class="day-date">{{ day.date }}</span>
+      </div>
+      
+      <div class="forecast-icon">
+        {{ getWeatherIcon(day.condition) }}
+      </div>
+      
+      <div class="forecast-condition">{{ day.condition }}</div>
+      
+      <div class="temp-bar-wrap">
+        <span class="temp-sm">{{ day.tempLow }}°</span>
+        <div class="temp-bar">
+          <div class="temp-fill" [style.width]="((day.tempHigh - day.tempLow) / 15) * 100 + '%'"></div>
+        </div>
+        <span class="temp-sm font-bold">{{ day.tempHigh }}°</span>
+      </div>
+
+    </div>
+  </div>
+</div>

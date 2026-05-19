@@ -1,0 +1,103 @@
+<div class="field-management-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Field Management</h1>
+      <p class="page-subtitle">Manage crops, soil, and harvest statuses.</p>
+    </div>
+    <div class="action-bar">
+      <div class="search-wrap">
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterFields()" placeholder="Search fields or crops..." class="search-input">
+      </div>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Add New Field</button>
+    </div>
+  </div>
+
+  <!-- Grid Layout for Fields -->
+  <div class="field-grid">
+    <div class="field-card glass-panel" *ngFor="let field of filteredFields">
+      <div class="card-header">
+        <h3>{{ field.name }}</h3>
+        <span class="status-badge" [ngClass]="field.status | lowercase | slice:0:7">{{ field.status }}</span>
+      </div>
+      
+      <div class="card-body">
+        <div class="stat-row">
+          <span class="stat-label">Crop Type</span>
+          <span class="stat-value">{{ field.cropType }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Size (Acres)</span>
+          <span class="stat-value">{{ field.sizeAcres }} acres</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Soil Moisture</span>
+          <span class="stat-value">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="field.soilMoisture + '%'" [ngClass]="{'low': field.soilMoisture < 30}"></div>
+            </div>
+            {{ field.soilMoisture }}%
+          </span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Expected Yield</span>
+          <span class="stat-value">{{ field.expectedYield }} tons</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <!-- Quick status toggles -->
+        <button class="action-btn" *ngIf="field.status === 'Needs Water'" (click)="updateStatus(field, 'Healthy')">Mark Healthy</button>
+        <button class="action-btn text-danger" (click)="deleteField(field._id!)">Delete</button>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredFields.length === 0">
+      <p>No fields found matching your criteria.</p>
+    </div>
+  </div>
+
+  <!-- Add Field Modal -->
+  <div class="modal-backdrop" *ngIf="showAddModal">
+    <div class="modal-content glass-panel fade-in">
+      <h2>Add New Field</h2>
+      
+      <div class="form-group">
+        <label>Field Name</label>
+        <input type="text" [(ngModel)]="newField.name" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Crop Type</label>
+        <input type="text" [(ngModel)]="newField.cropType" class="form-input">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Size (Acres)</label>
+          <input type="number" [(ngModel)]="newField.sizeAcres" class="form-input">
+        </div>
+        <div class="form-group half">
+          <label>Expected Yield</label>
+          <input type="number" [(ngModel)]="newField.expectedYield" class="form-input">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Initial Status</label>
+        <select [(ngModel)]="newField.status" class="form-input">
+          <option value="Healthy">Healthy</option>
+          <option value="Needs Water">Needs Water</option>
+          <option value="Harvesting">Harvesting</option>
+          <option value="Planning">Planning</option>
+        </select>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveNewField()">Save Field</button>
+      </div>
+    </div>
+  </div>
+</div>

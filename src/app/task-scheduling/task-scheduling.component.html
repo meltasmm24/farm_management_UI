@@ -1,0 +1,157 @@
+<div class="task-scheduling-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Task Scheduling</h1>
+      <p class="page-subtitle">Organize farm operations, assign work, and track priority objectives.</p>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" (click)="openAddModal()">+ New Task</button>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board">
+    
+    <!-- To Do Column -->
+    <div class="kanban-col glass-panel">
+      <div class="col-header">
+        <h2>To Do</h2>
+        <span class="task-count">{{ todoTasks.length }}</span>
+      </div>
+      <div class="task-list">
+        <div *ngFor="let task of todoTasks" class="task-card" [ngClass]="'priority-' + task.priority.toLowerCase()">
+          <div class="task-header">
+            <span class="task-priority badge">{{ task.priority }} Priority</span>
+            <button class="icon-btn text-danger" (click)="deleteTask(task._id!)">×</button>
+          </div>
+          <h3>{{ task.title }}</h3>
+          <p class="task-desc">{{ task.description }}</p>
+          <div class="task-footer">
+            <div class="task-assignee">
+              <div class="avatar">{{ task.assignee.charAt(0) }}</div>
+              <span>{{ task.assignee }}</span>
+            </div>
+            <div class="task-due text-sm">{{ task.dueDate | date:'MMM d' }}</div>
+          </div>
+          <div class="task-actions mt-2">
+            <button class="btn-sm btn-outline" (click)="updateTaskStatus(task, 'In Progress')">Start Task &rarr;</button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="todoTasks.length === 0">No pending tasks.</div>
+      </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="kanban-col glass-panel">
+      <div class="col-header border-info">
+        <h2 class="text-info">In Progress</h2>
+        <span class="task-count">{{ inProgressTasks.length }}</span>
+      </div>
+      <div class="task-list">
+        <div *ngFor="let task of inProgressTasks" class="task-card" [ngClass]="'priority-' + task.priority.toLowerCase()">
+          <div class="task-header">
+            <span class="task-priority badge">{{ task.priority }} Priority</span>
+            <button class="icon-btn text-danger" (click)="deleteTask(task._id!)">×</button>
+          </div>
+          <h3>{{ task.title }}</h3>
+          <p class="task-desc">{{ task.description }}</p>
+          <div class="task-footer">
+            <div class="task-assignee">
+              <div class="avatar">{{ task.assignee.charAt(0) }}</div>
+              <span>{{ task.assignee }}</span>
+            </div>
+            <div class="task-due text-sm">{{ task.dueDate | date:'MMM d' }}</div>
+          </div>
+          <div class="task-actions mt-2">
+            <button class="btn-sm btn-outline-danger" (click)="updateTaskStatus(task, 'To Do')">&larr; Back</button>
+            <button class="btn-sm btn-success" (click)="updateTaskStatus(task, 'Completed')">Complete &rarr;</button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="inProgressTasks.length === 0">No tasks in progress.</div>
+      </div>
+    </div>
+
+    <!-- Completed Column -->
+    <div class="kanban-col glass-panel">
+      <div class="col-header border-success">
+        <h2 class="text-success">Completed</h2>
+        <span class="task-count">{{ completedTasks.length }}</span>
+      </div>
+      <div class="task-list">
+        <div *ngFor="let task of completedTasks" class="task-card completed-card">
+          <div class="task-header">
+            <span class="task-priority badge badge-success">Done</span>
+            <button class="icon-btn text-danger" (click)="deleteTask(task._id!)">×</button>
+          </div>
+          <h3 class="task-title-strike">{{ task.title }}</h3>
+          <p class="task-desc">{{ task.description }}</p>
+          <div class="task-footer">
+            <div class="task-assignee">
+              <div class="avatar bg-success">{{ task.assignee.charAt(0) }}</div>
+              <span>{{ task.assignee }}</span>
+            </div>
+            <div class="task-due text-sm">Finished</div>
+          </div>
+          <div class="task-actions mt-2">
+            <button class="btn-sm btn-outline-danger" (click)="updateTaskStatus(task, 'In Progress')">Reopen</button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="completedTasks.length === 0">No completed tasks yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add Task Modal -->
+  <div class="modal-backdrop" *ngIf="showAddModal">
+    <div class="modal-content glass-panel fade-in">
+      <h2>Create New Task</h2>
+      
+      <div class="form-group">
+        <label>Task Title</label>
+        <input type="text" [(ngModel)]="newTask.title" class="form-input" placeholder="e.g. Mend south pasture fence">
+      </div>
+
+      <div class="form-group">
+        <label>Description (Optional)</label>
+        <textarea [(ngModel)]="newTask.description" class="form-input" rows="3" placeholder="Provide details..."></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Assign To</label>
+          <select [(ngModel)]="newTask.assignee" class="form-input">
+            <option *ngFor="let worker of workersList" [value]="worker">{{ worker }}</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Priority</label>
+          <select [(ngModel)]="newTask.priority" class="form-input">
+            <option *ngFor="let prio of priorityLevels" [value]="prio">{{ prio }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Status</label>
+          <select [(ngModel)]="newTask.status" class="form-input">
+            <option value="To Do">To Do</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Due Date</label>
+          <input type="date" [(ngModel)]="newTask.dueDate" class="form-input">
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveTask()">Save Task</button>
+      </div>
+    </div>
+  </div>
+</div>

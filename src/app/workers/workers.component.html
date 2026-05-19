@@ -1,0 +1,151 @@
+<div class="workers-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Worker Directory</h1>
+      <p class="page-subtitle">Manage personnel profiles, task assignments, and active staff status.</p>
+    </div>
+    <div class="action-bar">
+      <div class="search-wrap">
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search names or roles..." class="search-input">
+      </div>
+      <div class="filter-group">
+        <select class="form-select" [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()">
+          <option value="All">All Roles</option>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Add Worker</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card glass-panel">
+      <div class="kpi-title">Total Staff</div>
+      <div class="kpi-value text-primary">{{ totalWorkers }}</div>
+    </div>
+    <div class="kpi-card glass-panel success-border">
+      <div class="kpi-title text-success">Currently Active</div>
+      <div class="kpi-value text-success">{{ activeWorkers }}</div>
+    </div>
+    <div class="kpi-card glass-panel warn-border" *ngIf="onLeaveWorkers > 0">
+      <div class="kpi-title text-warning">On Leave / Sick</div>
+      <div class="kpi-value text-warning">{{ onLeaveWorkers }}</div>
+    </div>
+  </div>
+
+  <!-- Worker Directory Grid -->
+  <div class="workers-grid">
+    <div *ngFor="let worker of filteredWorkers" class="worker-card glass-panel" [ngClass]="{'border-warn': worker.status !== 'Active'}">
+      
+      <div class="card-header">
+        <div class="worker-profile">
+          <div class="avatar-lg" [ngClass]="{'bg-gray': worker.status !== 'Active', 'bg-primary': worker.status === 'Active'}">
+            {{ worker.name.charAt(0) }}
+          </div>
+          <div class="worker-title">
+            <h3>{{ worker.name }}</h3>
+            <span class="role-badge">{{ worker.role }}</span>
+          </div>
+        </div>
+        <button class="icon-btn text-danger" (click)="deleteWorker(worker._id!)" title="Remove Personnel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+
+      <div class="card-body">
+        <div class="status-indicator" [ngClass]="{
+            'status-active': worker.status === 'Active', 
+            'status-leave': worker.status === 'On Leave', 
+            'status-sick': worker.status === 'Sick'
+          }">
+          <span class="pulse-dot" *ngIf="worker.status === 'Active'"></span>
+          {{ worker.status }}
+        </div>
+        
+        <div class="contact-info mt-3">
+          <div class="info-row">
+            <span class="icon">📞</span>
+            <span>{{ worker.phone }}</span>
+          </div>
+          <div class="info-row">
+            <span class="icon">✉️</span>
+            <span>{{ worker.email }}</span>
+          </div>
+        </div>
+        
+        <div class="stats-box mt-3">
+          <div class="stat-col">
+            <span class="stat-num">{{ worker.tasksAssigned }}</span>
+            <span class="stat-lbl">Tasks</span>
+          </div>
+          <div class="stat-col line-left">
+            <span class="stat-num text-sm">{{ worker.joinDate | date:'y' }}</span>
+            <span class="stat-lbl">Joined</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <select class="form-select status-select" [ngModel]="worker.status" (ngModelChange)="updateStatus(worker, $event)">
+          <option *ngFor="let opt of statusOptions" [value]="opt">Set Status: {{ opt }}</option>
+        </select>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredWorkers.length === 0">
+    <p>No personnel records found.</p>
+  </div>
+
+  <!-- Add Worker Modal -->
+  <div class="modal-backdrop" *ngIf="showAddModal">
+    <div class="modal-content glass-panel fade-in">
+      <h2>Add New Personnel</h2>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="newWorker.name" class="form-input" placeholder="e.g. Jane Smith">
+        </div>
+        <div class="form-group half">
+          <label>Role</label>
+          <select [(ngModel)]="newWorker.role" class="form-input">
+            <option *ngFor="let rl of roles" [value]="rl">{{ rl }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Phone Number</label>
+          <input type="tel" [(ngModel)]="newWorker.phone" class="form-input" placeholder="(555) 000-0000">
+        </div>
+        <div class="form-group half">
+          <label>Email Address</label>
+          <input type="email" [(ngModel)]="newWorker.email" class="form-input" placeholder="jane@farm.local">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Initial Status</label>
+          <select [(ngModel)]="newWorker.status" class="form-input">
+            <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Join Date</label>
+          <input type="date" [(ngModel)]="newWorker.joinDate" class="form-input">
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveWorker()">Save Personnel</button>
+      </div>
+    </div>
+  </div>
+</div>

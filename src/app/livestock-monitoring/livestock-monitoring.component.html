@@ -1,0 +1,143 @@
+<div class="livestock-monitoring-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Livestock Monitoring</h1>
+      <p class="page-subtitle">Track animal health, growth metrics, and general herd population.</p>
+    </div>
+    <div class="action-bar">
+      <div class="search-wrap">
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search tag ID or breed..." class="search-input">
+      </div>
+      <div class="filter-group">
+        <select class="form-select" [(ngModel)]="speciesFilter" (ngModelChange)="applyFilters()">
+          <option value="All">All Species</option>
+          <option *ngFor="let option of speciesOptions" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Register Animal</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card glass-panel">
+      <div class="kpi-title">Herd Population</div>
+      <div class="kpi-value text-primary">{{ totalHeadCount }}</div>
+    </div>
+    <div class="kpi-card glass-panel warn-border" *ngIf="pregnantCount > 0">
+      <div class="kpi-title text-info">Expecting / Pregnant</div>
+      <div class="kpi-value text-info">{{ pregnantCount }}</div>
+    </div>
+    <div class="kpi-card glass-panel danger-border" *ngIf="sickCount > 0">
+      <div class="kpi-title text-danger">Active Health Alerts</div>
+      <div class="kpi-value text-danger">{{ sickCount }}</div>
+    </div>
+  </div>
+
+  <!-- Livestock Grid -->
+  <div class="livestock-grid">
+    <div *ngFor="let anim of filteredLivestock" class="livestock-card glass-panel" [ngClass]="{'border-danger': anim.healthStatus === 'Sick', 'border-info': anim.healthStatus === 'Pregnant'}">
+      <div class="card-header">
+        <div class="item-info">
+          <h3>{{ anim.tagId }}</h3>
+          <span class="species-badge">{{ anim.species }}</span>
+        </div>
+        <button class="icon-btn text-danger" (click)="deleteAnimal(anim._id!)" title="Remove Record">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+
+      <div class="card-body">
+        <div class="health-status" [ngClass]="{
+            'status-healthy': anim.healthStatus === 'Healthy', 
+            'status-sick': anim.healthStatus === 'Sick', 
+            'status-pregnant': anim.healthStatus === 'Pregnant',
+            'status-obs': anim.healthStatus === 'Under Observation'
+          }">
+          {{ anim.healthStatus }}
+        </div>
+        
+        <div class="stat-row mt-3">
+          <span class="stat-label">Breed</span>
+          <span class="stat-value">{{ anim.breed }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Age</span>
+          <span class="stat-value">{{ anim.ageMonths }} Months</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Weight</span>
+          <span class="stat-value font-bold">{{ anim.weightKg }} kg</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Last Vax</span>
+          <span class="stat-value text-sm">{{ anim.lastVaccination | date:'shortDate' }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <select class="form-select status-select" [ngModel]="anim.healthStatus" (ngModelChange)="updateHealthStatus(anim, $event)">
+          <option *ngFor="let opt of healthOptions" [value]="opt">Set: {{ opt }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredLivestock.length === 0">
+    <p>No animals found matching criteria.</p>
+  </div>
+
+  <!-- Add Animal Modal -->
+  <div class="modal-backdrop" *ngIf="showAddModal">
+    <div class="modal-content glass-panel fade-in">
+      <h2>Register Livestock</h2>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Tag ID</label>
+          <input type="text" [(ngModel)]="newAnimal.tagId" class="form-input" placeholder="e.g. BOV-112">
+        </div>
+        <div class="form-group half">
+          <label>Species</label>
+          <select [(ngModel)]="newAnimal.species" class="form-input">
+            <option *ngFor="let sp of speciesOptions" [value]="sp">{{ sp }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Breed</label>
+          <input type="text" [(ngModel)]="newAnimal.breed" class="form-input" placeholder="e.g. Angus">
+        </div>
+        <div class="form-group half">
+          <label>Initial Health Status</label>
+          <select [(ngModel)]="newAnimal.healthStatus" class="form-input">
+            <option *ngFor="let opt of healthOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group third">
+          <label>Age (Mos)</label>
+          <input type="number" [(ngModel)]="newAnimal.ageMonths" class="form-input">
+        </div>
+        <div class="form-group third">
+          <label>Weight (kg)</label>
+          <input type="number" [(ngModel)]="newAnimal.weightKg" class="form-input">
+        </div>
+        <div class="form-group third">
+          <label>Last Vax</label>
+          <input type="date" [(ngModel)]="newAnimal.lastVaccination" class="form-input">
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveAnimal()">Save Animal</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<div class="inventory-control-container">
+  
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Inventory Control</h1>
+      <p class="page-subtitle">Manage supplies, monitor stock thresholds, and track usage.</p>
+    </div>
+    <div class="action-bar">
+      <div class="search-wrap">
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search items..." class="search-input">
+      </div>
+      <div class="filter-group">
+        <select class="form-select" [(ngModel)]="categoryFilter" (ngModelChange)="applyFilters()">
+          <option value="All">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" (click)="openAddModal()">+ Add Item</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card glass-panel">
+      <div class="kpi-title">Items Tracked</div>
+      <div class="kpi-value text-primary">{{ totalItems }}</div>
+    </div>
+    <div class="kpi-card glass-panel warn-border" *ngIf="lowStockCount > 0">
+      <div class="kpi-title text-warning">Low Stock Alerts</div>
+      <div class="kpi-value text-warning">{{ lowStockCount }}</div>
+    </div>
+    <div class="kpi-card glass-panel danger-border" *ngIf="outOfStockCount > 0">
+      <div class="kpi-title text-danger">Out of Stock</div>
+      <div class="kpi-value text-danger">{{ outOfStockCount }}</div>
+    </div>
+  </div>
+
+  <!-- Inventory Grid -->
+  <div class="inventory-grid">
+    <div *ngFor="let item of filteredInventory" class="inventory-card glass-panel" [ngClass]="{'border-danger': getStatus(item) === 'Out of Stock', 'border-warning': getStatus(item) === 'Low Stock'}">
+      <div class="card-header">
+        <div class="item-info">
+          <h3>{{ item.name }}</h3>
+          <span class="category-badge">{{ item.category }}</span>
+        </div>
+        <button class="icon-btn text-danger" (click)="deleteItem(item._id!)" title="Delete Item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+
+      <div class="card-body">
+        <div class="stock-status" [ngClass]="{'status-good': getStatus(item) === 'In Stock', 'status-warn': getStatus(item) === 'Low Stock', 'status-danger': getStatus(item) === 'Out of Stock'}">
+          {{ getStatus(item) }}
+        </div>
+        
+        <div class="quantity-display">
+          <span class="quantity-value">{{ item.quantity }}</span>
+          <span class="quantity-unit">{{ item.unit }}</span>
+        </div>
+
+        <div class="progress-bar mt-2">
+          <div class="progress-fill" [style.width]="(item.quantity / (item.threshold * 3)) * 100 > 100 ? '100%' : (item.quantity / (item.threshold * 3)) * 100 + '%'"
+               [ngClass]="{'fill-danger': item.quantity === 0, 'fill-warn': item.quantity > 0 && item.quantity <= item.threshold, 'fill-good': item.quantity > item.threshold}">
+          </div>
+        </div>
+        <div class="threshold-label text-sm mt-1">Threshold: {{ item.threshold }}</div>
+      </div>
+
+      <div class="card-footer">
+        <div class="quantity-controls">
+          <button class="control-btn minus" (click)="updateQuantity(item, -1)" [disabled]="item.quantity === 0">-</button>
+          <button class="control-btn plus" (click)="updateQuantity(item, 1)">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredInventory.length === 0">
+    <p>No inventory items found. Try adjusting your filters or add a new item.</p>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div class="modal-backdrop" *ngIf="showAddModal">
+    <div class="modal-content glass-panel fade-in">
+      <h2>Add New Inventory Item</h2>
+      
+      <div class="form-group">
+        <label>Item Name</label>
+        <input type="text" [(ngModel)]="newItem.name" class="form-input" placeholder="e.g. Tomato Seeds">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Category</label>
+          <select [(ngModel)]="newItem.category" class="form-input">
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Unit</label>
+          <select [(ngModel)]="newItem.unit" class="form-input">
+            <option value="Bags">Bags</option>
+            <option value="Liters">Liters</option>
+            <option value="Gallons">Gallons</option>
+            <option value="Tons">Tons</option>
+            <option value="Kilograms">Kilograms</option>
+            <option value="Items">Items</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Initial Quantity</label>
+          <input type="number" [(ngModel)]="newItem.quantity" class="form-input text-lg">
+        </div>
+        <div class="form-group half">
+          <label>Alert Threshold</label>
+          <input type="number" [(ngModel)]="newItem.threshold" placeholder="Minimum stock..." class="form-input">
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveItem()">Save Item</button>
+      </div>
+    </div>
+  </div>
+</div>
